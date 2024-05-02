@@ -3,13 +3,12 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { AuthGuard } from './auth/guards/auth.guard';
-import { RolesGuard } from './auth/guards/roles.guard';
+import { AccessTokenGuard } from './auth/guards/accessToken.guard';
 import { dbConfig } from './config/db.config';
 import jwtConfig from './config/jwt.config';
 import { ProjectsModule } from './projects/projects.module';
-import { UsersModule } from './users/users.module';
 import { TasksModule } from './tasks/tasks.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -28,11 +27,7 @@ import { TasksModule } from './tasks/tasks.module';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
+      useClass: AccessTokenGuard,
     },
   ],
 })

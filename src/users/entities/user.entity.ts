@@ -28,6 +28,9 @@ export class User extends BaseEntity implements IUser {
   @Column({ type: 'enum', enum: ROLES, default: ROLES.BASIC })
   role: ROLES;
 
+  @Column({ nullable: true })
+  refreshToken: string;
+
   @OneToMany(() => UserProjects, (userProjects) => userProjects.user)
   projects: UserProjects[];
 

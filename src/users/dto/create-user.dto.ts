@@ -39,4 +39,6 @@ export class CreateUserDto {
 
   @IsEnum(ROLES)
   role: ROLES;
+
+  refreshToken: string;
 }

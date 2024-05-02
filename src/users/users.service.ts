@@ -1,18 +1,17 @@
 import {
-  ConflictException,
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, Not, Repository, UpdateResult } from 'typeorm';
+import { ProjectsService } from '../projects/projects.service';
+import { AddUserInProjectDto } from './dto/add-user-in-project.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { AddUserInProjectDto } from './dto/add-user-in-project.dto';
 import { UserProjects } from './entities/userProjects.entity';
-import { ProjectsService } from '../projects/projects.service';
-import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -47,14 +46,13 @@ export class UsersService {
     });
 
     if (usersFound.length > 0) {
-      throw new ConflictException('User data already in use');
+      throw new BadRequestException('User or user data already in use');
     }
     return data;
   }
 
   async create(data: CreateUserDto): Promise<User> {
     const validatedData = await this.validateDataConfilicts({ data });
-    validatedData.password = await bcrypt.hash(validatedData.password, 10);
     const userCreated = this.usersRepository.create(validatedData);
     return this.usersRepository.save(userCreated);
   }
@@ -67,6 +65,27 @@ export class UsersService {
     const userFound = await this.usersRepository.findOne({
       where: { id },
       relations: ['projects', 'projects.project'],
+    });
+
+    if (!userFound) {
+      throw new NotFoundException('User not found');
+    }
+    return userFound;
+  }
+
+  async findByIdWithRefreshTooken(id: string): Promise<User> {
+    const userFound = await this.usersRepository.findOne({
+      where: { id },
+      select: [
+        'id',
+        'username',
+        'email',
+        'role',
+        'firstName',
+        'lastName',
+        'refreshToken',
+        'role',
+      ],
     });
 
     if (!userFound) {
@@ -155,7 +174,7 @@ export class UsersService {
       userId: userFound.id,
     });
     if (userProject) {
-      throw new ConflictException('User is already in this project');
+      throw new BadRequestException('User is already in this project');
     }
     return { projectId, userId };
   }

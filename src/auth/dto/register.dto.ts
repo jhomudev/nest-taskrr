@@ -41,4 +41,6 @@ export class RegisterDto {
   @IsEnum(ROLES)
   @IsOptional()
   role: ROLES;
+
+  refreshToken: string;
 }
